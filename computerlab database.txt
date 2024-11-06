@@ -1,0 +1,27 @@
+Account
+account_id PK
+first_name
+last_name
+username
+password
+role
+
+Units
+unit_id PK
+ComputerLab_id FK
+Status_id FK
+component
+PC_number
+count
+
+ComputerLab
+ComputerLab_id PK
+Lab
+Total Units
+
+Status
+status_id PK
+status
+remarks
+date
+time

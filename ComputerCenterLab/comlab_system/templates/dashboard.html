@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Lab Monitoring System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'design/dashboard.css' %}">
+</head>
+<body>
+    {% include 'navigation.html' %}
+
+    <div id="loadingScreen" class="loading-screen">
+        <div>
+            <div class="loading-spinner"></div>
+            <p>Processing</p>
+        </div>
+    </div>
+
+    <div class="container">
+
+        {% if messages %}
+            <div class="alert alert-danger">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <div class="header-container">
+            <h2>{{ lab_name }}</h2>
+            <div class="action-buttons">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUnitModal">
+                    <i class="bi bi-plus-circle"></i> Add Unit
+                </button>
+            </div>
+            <div class="search-bar">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search computer units..." onkeyup="filterComputers()">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="modal fade" id="addUnitModal" tabindex="-1" aria-labelledby="addUnitModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addUnitModalLabel">Add New Computer Unit</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addUnitForm" method="POST" action="{% url 'add_unit' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="computerlab_id" value="{{ selected_lab }}">
+                            <input type="hidden" name="status" value="Active">  
+                            
+                            <div class="mb-3">
+                                <label for="pcNumber" class="form-label">PC Number</label>
+                                <input type="text" class="form-control" id="pcNumber" name="pc_number" required placeholder="Enter PC Number">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="monitor" class="form-label">Monitor</label>
+                                <input type="text" class="form-control" id="monitor" name="monitor" required placeholder="Enter Monitor Details">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="keyboard" class="form-label">Keyboard</label>
+                                <input type="text" class="form-control" id="keyboard" name="keyboard" required placeholder="Enter Keyboard Details">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="mouse" class="form-label">Mouse</label>
+                                <input type="text" class="form-control" id="mouse" name="mouse" required placeholder="Enter Mouse Details">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ram" class="form-label">RAM</label>
+                                <input type="text" class="form-control" id="ram" name="ram" required placeholder="Enter RAM Size">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="motherboard" class="form-label">Motherboard</label>
+                                <input type="text" class="form-control" id="motherboard" name="motherboard" required placeholder="Enter Motherboard Details">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="cpu" class="form-label">CPU</label>
+                                <input type="text" class="form-control" id="cpu" name="cpu" required placeholder="Enter CPU Model">
+                            </div>
+                            
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary w-100">Add Unit</button>
+                            </div>
+                        </form>
+                        
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="container container-computers" id="computerUnitsContainer">
+            {% for unit in units %}
+                <div class="computer-unit" 
+                    data-id="{{ unit.unit_id }}"
+                    data-monitor="{{ unit.component.monitor|escapejs }}"
+                    data-keyboard="{{ unit.component.keyboard|escapejs }}"
+                    data-mouse="{{ unit.component.mouse|escapejs }}"
+                    data-ram="{{ unit.component.ram|escapejs }}"
+                    data-motherboard="{{ unit.component.motherboard|escapejs }}"
+                    data-cpu="{{ unit.component.cpu|escapejs }}"
+                    data-status="{{ unit.component.status.stat_monitor|default:"Unknown"|escapejs }}"  
+                    data-remarks="{{ unit.component.status.remarks|default:"No remarks"|escapejs }}"
+                    data-date="{{ unit.component.status.timestamp|default:"No date available"|escapejs }}"  
+                    onclick="showPopup(this)">
+                    <h5>{{ unit.pc_number }}</h5>
+                    <div class="icon-display">
+                        <img src="{% static 'icons/monitor.png' %}" alt="Monitor Icon" class="component-icon" />
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div id="popupBox" class="popup-box" style="display:none">
+        <div class="popup-content">
+            <span class="popup-close" onclick="closePopup()">&times;</span>
+            <div class="popup-details">
+                
+                <form id="updateForm" method="POST" action="{% url 'update_status' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="status_id" value="{{ status.id }}">
+                    <input type="hidden" name="computerlab_id" value="{{selected_lab}}">
+                    <table class="table table-bordered" id="popupTable">
+                        <tbody>
+                            <tr>
+                                <th>Components</th>
+                                <th>Specs</th>
+                                <th>Functional</th>
+                                <th>Non-Functional</th>
+                            </tr>
+                            <tr>
+                                <th>PC Number</th>
+                                <td id="popupPcNumber">Computer</td>
+                                <td colspan="2"></td>
+                            </tr>
+                            <tr>
+                                <th>Monitor</th>
+                                <td><span id="popupMonitor"></span></td>
+                                <td>
+                                    <input type="radio" name="monitorStatus" value="Functional"> Functional
+                                </td>
+                                <td>
+                                    <input type="radio" name="monitorStatus" value="Non-Functional"> Non-Functional
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Keyboard</th>
+                                <td><span id="popupKeyboard"></span></td>
+                                <td>
+                                    <input type="radio" name="keyboardStatus" value="Functional"> Functional
+                                </td>
+                                <td>
+                                    <input type="radio" name="keyboardStatus" value="Non-Functional"> Non-Functional
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Mouse</th>
+                                <td><span id="popupMouse"></span></td>
+                                <td>
+                                    <input type="radio" name="mouseStatus" value="Functional"> Functional
+                                </td>
+                                <td>
+                                    <input type="radio" name="mouseStatus" value="Non-Functional"> Non-Functional
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>RAM</th>
+                                <td><span id="popupRam"></span></td>
+                                <td>
+                                    <input type="radio" name="ramStatus" value="Functional"> Functional
+                                </td>
+                                <td>
+                                    <input type="radio" name="ramStatus" value="Non-Functional"> Non-Functional
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Motherboard</th>
+                                <td><span id="popupMotherboard"></span></td>
+                                <td>
+                                    <input type="radio" name="motherboardStatus" value="Functional"> Functional
+                                </td>
+                                <td>
+                                    <input type="radio" name="motherboardStatus" value="Non-Functional"> Non-Functional
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>CPU</th>
+                                <td><span id="popupCpu"></span></td>
+                                <td>
+                                    <input type="radio" name="cpuStatus" value="Functional"> Functional
+                                </td>
+                                <td>
+                                    <input type="radio" name="cpuStatus" value="Non-Functional"> Non-Functional
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Remarks</th>
+                                <td id="popupRemarks"></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <th>Date</th>
+                                <td id="popupDate"></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="submit">Submit</button>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'function/dashboard.js' %}"></script>
+</body>
+</html>

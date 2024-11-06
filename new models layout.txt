@@ -1,0 +1,22 @@
+units
+unit_id PK
+component FK
+computerlab
+pc_number
+
+Components
+Components_id PK
+status FK
+monitor
+keyboard
+mouse
+ram
+motherboard
+cpu
+
+status
+status_id PK
+status
+remarks
+date
+time

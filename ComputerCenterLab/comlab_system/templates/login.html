@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'design/login.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <div class="container-fluid d-flex p-0 vh-100">
+        <div class="left-side text-white">
+            <h1 class="mb-4">SMC Computer lab</h1>
+            <p class="lead text-center">Monitor your lab activities and manage computer units with ease.</p>
+            <a href="#" class="btn btn-outline-light mt-3">Learn More</a>
+        </div>
+
+        <div class="right-side p-5 d-flex align-items-center justify-content-center">
+            <form method="POST" action="{% url 'login_view' %}" class="w-100" style="max-width: 400px;">
+                {% csrf_token %}
+                <h2 class="text-center mb-4">ITC ComLab</h2>
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
