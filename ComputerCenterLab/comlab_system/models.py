@@ -23,6 +23,7 @@ class ComputerLab(models.Model):
     computerlab_id = models.AutoField(primary_key=True)
     lab = models.CharField(max_length=100)
     total_units = models.PositiveIntegerField()
+    lab_images = models.ImageField(upload_to='lab_images/', null=True, blank=True)
 
     def __str__(self):
         return self.lab

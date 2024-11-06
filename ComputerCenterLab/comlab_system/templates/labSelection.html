@@ -19,15 +19,19 @@
         </div>
     </div>    
 
-
     <div class="container container-labs" id="labContainer">
         {% for lab in computer_labs %}
-            <a href="{% url 'dashboard_lab' lab.pk %}" class="lab-unit">
-                <h5>{{ lab.lab }}</h5>
-                <ul class="lab-details">
-                    <li>Computers: {{ lab.unit_count }}</li>
-                    <li>Status: Available</li> 
-                </ul>
+        <a href="{% url 'dashboard_lab' lab.pk %}" class="lab-unit">
+            <div class="lab_background">
+                <img src="{{ lab.lab_images.url }}" alt="" class="lab_img">
+            </div>
+                <div class="lab_info">
+                    <h5>{{ lab.lab }}</h5>
+                    <ul class="lab-details">
+                        <li>Computers: {{ lab.unit_count }}</li>
+                        <li>Status: Available</li> 
+                    </ul>
+                </div>
             </a>
         {% endfor %}
     </div>
