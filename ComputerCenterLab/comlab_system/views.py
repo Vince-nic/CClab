@@ -76,8 +76,9 @@ def lab_dashboard_view(request):
 
     computer_labs = ComputerLab.objects.all()
 
+    # Add unit count to each lab object
     for lab in computer_labs:
-        print(f"Lab ID: {lab.pk}, Lab Name: {lab.lab}" )
+        lab.unit_count = Unit.objects.filter(computerlab=lab).count()
 
     context = {
         'computer_labs': computer_labs,
@@ -85,6 +86,7 @@ def lab_dashboard_view(request):
     }
 
     return render(request, 'labSelection.html', context)
+
 
 
 # ------------------------- computer lab dashboard -----------------------------
